@@ -15,11 +15,11 @@
 			<artifactId>guava</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.quarkus.arc</groupId>
+			<groupId>com.ethwt.quarkus.arc</groupId>
 			<artifactId>arc</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.quarkus.arc</groupId>
+			<groupId>com.ethwt.quarkus.arc</groupId>
 			<artifactId>arc-processor</artifactId>
 		</dependency>
 		<dependency>

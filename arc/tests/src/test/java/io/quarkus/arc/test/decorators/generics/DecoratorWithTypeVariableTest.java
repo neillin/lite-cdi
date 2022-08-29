@@ -1,0 +1,99 @@
+package io.quarkus.arc.test.decorators.generics;
+
+import java.util.List;
+
+import javax.decorator.Decorator;
+import javax.decorator.Delegate;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Any;
+import javax.enterprise.util.TypeLiteral;
+import javax.inject.Inject;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import com.google.common.collect.ImmutableSet;
+
+import io.quarkus.arc.Arc;
+import io.quarkus.arc.Priority;
+import io.quarkus.arc.Unremovable;
+import io.quarkus.arc.test.ArcTestContainer;
+
+public class DecoratorWithTypeVariableTest {
+
+    @RegisterExtension
+    public ArcTestContainer container = new ArcTestContainer(MyParameterizedType.class, MyInterface.class, MyDecorator.class,
+            MyDelegateBean.class, Contract.class);
+
+    @Test
+    public void testDecoration() {
+        // Firstly verify that decorator was invoked and works, i.e. that build time resolution worked
+        MyDelegateBean bean = Arc.container().instance(MyDelegateBean.class).get();
+        Assertions.assertEquals(MyDecorator.class.getSimpleName(),
+                bean.doSomething(new MyParameterizedType<>("test", new Contract())));
+
+        // Secondly, assert that this decorator can be resolved at runtime via BM
+        List<javax.enterprise.inject.spi.Decorator<?>> decoratorsFound = Arc.container().beanManager()
+                .resolveDecorators(ImmutableSet.of(new TypeLiteral<MyInterface<String, Contract>>() {
+                }.getType()), Any.Literal.INSTANCE);
+        Assertions.assertTrue(decoratorsFound.size() == 1);
+    }
+
+    public static class MyParameterizedType<K, V> {
+
+        final K key;
+
+        final V value;
+
+        public MyParameterizedType(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return "key=" + key.toString() + ", value=" + value.toString();
+        }
+
+    }
+
+    public interface MyInterface<K, V> {
+
+        String doSomething(MyParameterizedType<K, V> myParameterizedType);
+
+    }
+
+    @Decorator
+    @Priority(1)
+    public static class MyDecorator<K, V> implements MyInterface<K, V> {
+
+        @Inject
+        @Delegate
+        @Any
+        MyInterface<K, V> delegate;
+
+        @Override
+        public String doSomething(MyParameterizedType<K, V> myParameterizedType) {
+            delegate.doSomething(myParameterizedType);
+            // return something else to verify decoration
+            return MyDecorator.class.getSimpleName();
+        }
+
+    }
+
+    @ApplicationScoped
+    @Unremovable
+    public static class MyDelegateBean implements MyInterface<String, Contract> {
+
+        @Override
+        public String doSomething(MyParameterizedType<String, Contract> myConcreteType) {
+            return MyDelegateBean.class.getSimpleName();
+        }
+
+    }
+
+    public static class Contract {
+
+    }
+}

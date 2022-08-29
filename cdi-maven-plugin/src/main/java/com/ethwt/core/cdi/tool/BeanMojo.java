@@ -170,7 +170,7 @@ public class BeanMojo extends AbstractMojo {
 
         try {
             beanProcessor.process();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new MojoExecutionException("Error generating resources", e);
         }
     }

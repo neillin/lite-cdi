@@ -17,7 +17,7 @@
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>	
 		<dependency>
-			<groupId>io.quarkus.arc</groupId>
+			<groupId>com.ethwt.quarkus.arc</groupId>
 			<artifactId>arc</artifactId>
 		</dependency>
 		 <dependency>
@@ -35,7 +35,7 @@
         </dependency>
 
 		<dependency>
-			<groupId>io.quarkus.arc</groupId>
+			<groupId>com.ethwt.quarkus.arc</groupId>
 			<artifactId>arc-processor</artifactId>
 			<scope>test</scope>
 		</dependency>
